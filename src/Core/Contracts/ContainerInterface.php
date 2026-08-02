@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Demezio\Finbase\Core\Contracts;
+
+/**
+ * Define o contrato de um contêiner de injeção de dependências.
+ *
+ * O contêiner associa uma abstração — normalmente uma interface ou uma classe —
+ * à classe concreta que deve ser instanciada quando essa abstração for solicitada.
+ * Também permite registrar serviços compartilhados como instâncias únicas.
+ */
+interface ContainerInterface
+{
+    /**
+     * Registra uma dependência transitória no contêiner.
+     *
+     * A cada resolução da abstração, o contêiner deve fornecer uma nova instância
+     * da classe concreta. Use este método para serviços que não precisam manter
+     * estado entre usos.
+     *
+     * Exemplo: associar `TransactionRepositoryInterface` a
+     * `JsonTransactionRepository`.
+     *
+     * @param class-string $abstract Classe ou interface solicitada pelos consumidores.
+     * @param class-string $concrete Classe concreta que implementa ou estende a abstração.
+     */
+    public function bind(string $abstract, string $concrete): void;
+
+    /**
+     * Registra uma dependência compartilhada como singleton.
+     *
+     * Após a primeira resolução, o contêiner deve reutilizar a mesma instância
+     * para as próximas solicitações da abstração. É indicado para objetos cujo
+     * estado deve ser compartilhado durante o ciclo de vida da aplicação, como
+     * um logger ou uma configuração.
+     *
+     * @param class-string $abstract Classe ou interface solicitada pelos consumidores.
+     * @param class-string $concrete Classe concreta que implementa ou estende a abstração.
+     */
+    public function singleton(string $abstract, string $concrete): void;
+
+    /**
+     * Resolve uma abstração registrada e retorna sua instância.
+     *
+     * Para registros feitos com {@see singleton()}, as chamadas seguintes devem
+     * retornar a mesma instância. Para registros feitos com {@see bind()}, a
+     * implementação deve criar uma nova instância a cada resolução.
+     *
+     * @param class-string $abstract Classe ou interface que será resolvida.
+     *
+     * @return object Instância correspondente à abstração solicitada.
+     *
+     * @throws \Throwable Caso a abstração não possa ser resolvida ou suas dependências não possam ser criadas.
+     */
+    public function make(string $abstract): object;
+
+    /**
+     * Verifica se uma abstração possui um registro explícito no contêiner.
+     *
+     * @param class-string $abstract Classe ou interface consultada.
+     *
+     * @return bool `true` quando houver um registro criado por {@see bind()} ou
+     *              {@see singleton()}; caso contrário, `false`.
+     */
+    public function has(string $abstract): bool;
+}

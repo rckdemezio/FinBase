@@ -2,7 +2,7 @@
 
 Projeto pessoal para estudar desenvolvimento de uma aplicação de controle financeiro. A proposta é centralizar o registro de receitas e despesas para tornar os gastos mais fáceis de acompanhar e compreender.
 
-> O projeto está em fase inicial: a estrutura e as ferramentas de qualidade já estão sendo preparadas, mas as funcionalidades de negócio ainda serão implementadas.
+> O projeto está em fase inicial: a estrutura, as ferramentas de qualidade e os primeiros contratos do Core estão sendo preparados. As funcionalidades de negócio ainda serão implementadas.
 
 ## Objetivos de estudo
 
@@ -53,13 +53,19 @@ Para aplicar a formatação configurada:
 composer fix
 ```
 
+## Arquitetura
+
+A organização planejada para os componentes técnicos está documentada em [Core](src/Core/doc.md). O primeiro contrato definido é o [`ContainerInterface`](src/Core/Contracts/ContainerInterface.php), que estabelece o comportamento esperado do contêiner de injeção de dependências.
+
 ## Roadmap
 
 - [x] Inicializar o projeto com Composer e autoload PSR-4
 - [x] Configurar análise estática com PHPStan
 - [x] Configurar padronização de código com PHP CS Fixer
+- [x] Documentar a estrutura inicial do Core
+- [x] Definir o contrato inicial do contêiner de dependências
 - [ ] Definir o domínio e os casos de uso financeiros
-- [ ] Implementar o núcleo da aplicação
+- [ ] Implementar os componentes do Core
 - [ ] Adicionar testes automatizados
 - [ ] Criar uma interface para uso da aplicação
 
