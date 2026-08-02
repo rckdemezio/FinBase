@@ -4,35 +4,31 @@ declare(strict_types=1);
 
 namespace Demezio\Finbase\Finance\Presentation\Http\Controller;
 
-use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\InvalidRequestDataException;
+use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\Request;
-use Demezio\Finbase\Finance\Application\UseCase\CreateAccount\CreateAccount;
+use Demezio\Finbase\Finance\Application\UseCase\GetAccount\GetAccount;
 use Demezio\Finbase\Finance\Domain\Entity\Account;
+use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
 
 /**
- * Traduz a criação de contas entre HTTP e o caso de uso da aplicação.
+ * Traduz a consulta de uma conta entre HTTP e o caso de uso da aplicação.
  */
-final class CreateAccountController
+final class GetAccountController
 {
-    public function __construct(private readonly CreateAccount $createAccount)
+    public function __construct(private readonly GetAccount $getAccount)
     {
     }
 
     public function __invoke(Request $request): JsonResponse
     {
-        $payload = $request->json();
+        $id = $request->routeParameter('id');
 
-        if (
-            ! is_string($payload['name'] ?? null)
-            || ! is_string($payload['currency'] ?? null)
-        ) {
-            throw new InvalidRequestDataException('Os campos "name" e "currency" são obrigatórios.');
+        if ($id === null) {
+            throw new InvalidRequestDataException('O parâmetro "id" é obrigatório.');
         }
 
-        $account = $this->createAccount->execute($payload['name'], $payload['currency']);
-
-        return new JsonResponse($this->accountData($account), 201);
+        return new JsonResponse($this->accountData($this->getAccount->execute(AccountId::fromString($id))));
     }
 
     /**

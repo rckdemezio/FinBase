@@ -11,12 +11,14 @@ final class Request
 {
     /**
      * @param array<string, mixed> $query
+     * @param array<string, string> $routeParameters
      */
     public function __construct(
         private readonly string $method,
         private readonly string $uri,
         private readonly array $query = [],
         private readonly string $body = '',
+        private readonly array $routeParameters = [],
     ) {
     }
 
@@ -63,5 +65,46 @@ final class Request
     public function body(): string
     {
         return $this->body;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function routeParameters(): array
+    {
+        return $this->routeParameters;
+    }
+
+    public function routeParameter(string $name): ?string
+    {
+        return $this->routeParameters[$name] ?? null;
+    }
+
+    /**
+     * @param array<string, string> $routeParameters
+     */
+    public function withRouteParameters(array $routeParameters): self
+    {
+        return new self($this->method, $this->uri, $this->query, $this->body, $routeParameters);
+    }
+
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws InvalidJsonException
+     */
+    public function json(): array
+    {
+        try {
+            $data = json_decode($this->body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw new InvalidJsonException('O corpo da requisição contém JSON inválido.', previous: $exception);
+        }
+
+        if (! is_array($data) || array_is_list($data)) {
+            throw new InvalidJsonException('O corpo da requisição deve conter um objeto JSON.');
+        }
+
+        return $data;
     }
 }

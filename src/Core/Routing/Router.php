@@ -43,8 +43,10 @@ final class Router
     public function dispatch(Request $request): Response
     {
         foreach ($this->routes as $route) {
-            if ($route->matches($request)) {
-                return $route->handle($request);
+            $parameters = $route->match($request);
+
+            if ($parameters !== null) {
+                return $route->handle($request->withRouteParameters($parameters));
             }
         }
 

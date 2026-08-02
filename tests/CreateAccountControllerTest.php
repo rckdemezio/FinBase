@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Demezio\Finbase\Tests\Finance\Presentation\Http\Controller;
 
 use Demezio\Finbase\Core\Http\Request;
+use Demezio\Finbase\Core\Http\ExceptionHandler;
 use Demezio\Finbase\Finance\Application\UseCase\CreateAccount\CreateAccount;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\InMemory\InMemoryAccountRepository;
 use Demezio\Finbase\Finance\Presentation\Http\Controller\CreateAccountController;
@@ -29,7 +30,7 @@ final class CreateAccountControllerTest extends TestCase
 
     public function testItReturnsBadRequestForInvalidJson(): void
     {
-        $response = ($this->controller())(new Request('POST', '/accounts', body: '{'));
+        $response = $this->responseFor(new Request('POST', '/accounts', body: '{'));
 
         self::assertSame(400, $response->status());
         self::assertSame(
@@ -40,7 +41,7 @@ final class CreateAccountControllerTest extends TestCase
 
     public function testItReturnsUnprocessableEntityForInvalidDomainData(): void
     {
-        $response = ($this->controller())(new Request('POST', '/accounts', body: '{"name":" ","currency":"BRL"}'));
+        $response = $this->responseFor(new Request('POST', '/accounts', body: '{"name":" ","currency":"BRL"}'));
 
         self::assertSame(422, $response->status());
         self::assertSame(
@@ -52,5 +53,14 @@ final class CreateAccountControllerTest extends TestCase
     private function controller(): CreateAccountController
     {
         return new CreateAccountController(new CreateAccount(new InMemoryAccountRepository()));
+    }
+
+    private function responseFor(Request $request): \Demezio\Finbase\Core\Http\Response
+    {
+        try {
+            return ($this->controller())($request);
+        } catch (\Throwable $exception) {
+            return (new ExceptionHandler())->handle($exception);
+        }
     }
 }

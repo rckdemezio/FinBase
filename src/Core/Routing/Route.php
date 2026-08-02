@@ -26,14 +26,50 @@ final class Route
         $this->handler = $handler;
     }
 
-    public function matches(Request $request): bool
+    /**
+     * @return array<string, string>|null Os parâmetros extraídos ou null quando não há correspondência.
+     */
+    public function match(Request $request): ?array
     {
-        return strtoupper($this->method) === $request->method()
-            && $this->path === $request->path();
+        if (strtoupper($this->method) !== $request->method()) {
+            return null;
+        }
+
+        $parameters = [];
+        $pattern = $this->pattern();
+
+        if (preg_match($pattern, $request->path(), $matches) !== 1) {
+            return null;
+        }
+
+        foreach ($matches as $name => $value) {
+            if (is_string($name)) {
+                $parameters[$name] = rawurldecode($value);
+            }
+        }
+
+        return $parameters;
     }
 
     public function handle(Request $request): Response
     {
         return ($this->handler)($request);
+    }
+
+    private function pattern(): string
+    {
+        $pattern = '';
+        $offset = 0;
+
+        preg_match_all('/\{([a-zA-Z][a-zA-Z0-9_]*)\}/', $this->path, $placeholders, PREG_OFFSET_CAPTURE);
+
+        foreach ($placeholders[0] as $index => [$placeholder, $position]) {
+            $name = $placeholders[1][$index][0];
+            $pattern .= preg_quote(substr($this->path, $offset, $position - $offset), '#');
+            $pattern .= sprintf('(?P<%s>[^/]+)', $name);
+            $offset = $position + strlen($placeholder);
+        }
+
+        return '#^'. $pattern .preg_quote(substr($this->path, $offset), '#').'$#D';
     }
 }
