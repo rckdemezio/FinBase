@@ -13,9 +13,9 @@ final class ContainerTest extends TestCase
 {
     public function testBindingStoresConcreteClassAndSharingRule(): void
     {
-        $binding = new Binding(\DateTimeImmutable::class, true);
+        $binding = new Binding(TestDependency::class, true);
 
-        self::assertSame(\DateTimeImmutable::class, $binding->concrete());
+        self::assertSame(TestDependency::class, $binding->concrete());
         self::assertTrue($binding->isShared());
     }
 
@@ -23,39 +23,60 @@ final class ContainerTest extends TestCase
     {
         $container = new Container();
 
-        self::assertFalse($container->has(\DateTimeInterface::class));
+        self::assertFalse($container->has(TestContract::class));
 
-        $container->bind(\DateTimeInterface::class, \DateTimeImmutable::class);
+        $container->bind(TestContract::class, TestDependency::class);
 
-        self::assertTrue($container->has(\DateTimeInterface::class));
+        self::assertTrue($container->has(TestContract::class));
     }
 
     public function testContainerReportsSingletonBinding(): void
     {
         $container = new Container();
 
-        $container->singleton(\DateTimeInterface::class, \DateTimeImmutable::class);
+        $container->singleton(TestContract::class, TestDependency::class);
 
-        self::assertTrue($container->has(\DateTimeInterface::class));
+        self::assertTrue($container->has(TestContract::class));
     }
 
     public function testContainerResolvesRegisteredBinding(): void
     {
         $container = new Container();
-        $container->bind(\DateTimeInterface::class, \DateTimeImmutable::class);
+        $container->bind(TestContract::class, TestDependency::class);
 
-        $resolved = $container->make(\DateTimeInterface::class);
+        $resolved = $container->make(TestContract::class);
 
-        self::assertInstanceOf(\DateTimeImmutable::class, $resolved);
+        self::assertInstanceOf(TestDependency::class, $resolved);
     }
 
     public function testContainerResolvesConcreteClassWithoutBinding(): void
     {
         $container = new Container();
 
-        $resolved = $container->make(\DateTimeImmutable::class);
+        $resolved = $container->make(TestDependency::class);
 
-        self::assertInstanceOf(\DateTimeImmutable::class, $resolved);
+        self::assertInstanceOf(TestDependency::class, $resolved);
+    }
+
+    public function testContainerResolvesConstructorDependenciesRecursively(): void
+    {
+        $container = new Container();
+        $container->bind(TestContract::class, TestDependency::class);
+
+        $service = $container->make(TestService::class);
+
+        self::assertInstanceOf(TestService::class, $service);
+        self::assertInstanceOf(TestDependency::class, $service->dependency);
+    }
+
+    public function testContainerThrowsCoreExceptionForBuiltInConstructorType(): void
+    {
+        $container = new Container();
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage('tipo interno "string"');
+
+        $container->make(ServiceWithBuiltInParameter::class);
     }
 
     public function testContainerThrowsCoreExceptionWhenClassCannotBeResolved(): void
@@ -65,5 +86,27 @@ final class ContainerTest extends TestCase
         $this->expectException(ContainerException::class);
 
         $container->make('Demezio\\Finbase\\Tests\\UnknownClass');
+    }
+}
+
+interface TestContract
+{
+}
+
+final class TestDependency implements TestContract
+{
+}
+
+final class TestService
+{
+    public function __construct(public TestContract $dependency)
+    {
+    }
+}
+
+final class ServiceWithBuiltInParameter
+{
+    public function __construct(string $path)
+    {
     }
 }

@@ -11,12 +11,20 @@ use Demezio\Finbase\Core\Exceptions\ContainerException;
  * Implementação em memória de um contêiner de dependências.
  *
  * Cada abstração é usada como chave para o seu respectivo {@see Binding}.
- * Um novo registro para a mesma abstração substitui o anterior.
+ * Um novo registro para a mesma abstração substitui o anterior. O contêiner
+ * coordena a resolução e delega a criação da instância ao {@see Instantiator}.
  */
 final class Container implements ContainerInterface
 {
     /** @var array<string, Binding> */
     private array $bindings = [];
+
+    private readonly Instantiator $instantiator;
+
+    public function __construct()
+    {
+        $this->instantiator = new Instantiator();
+    }
 
     /**
      * Registra uma dependência transitória.
@@ -55,19 +63,6 @@ final class Container implements ContainerInterface
             ? $this->bindings[$abstract]->concrete()
             : $abstract;
 
-        return $this->instantiate($concrete);
-    }
-
-    /**
-     * Instancia uma classe concreta que não possui dependências no construtor.
-     *
-     * @param class-string $concrete
-     *
-     * @throws ContainerException Caso a classe não exista, não seja instanciável
-     *                            ou exija dependências no construtor.
-     */
-    private function instantiate(string $concrete): object
-    {
         try {
             $reflection = new \ReflectionClass($concrete);
 
@@ -75,7 +70,12 @@ final class Container implements ContainerInterface
                 throw new ContainerException(sprintf('A classe "%s" não pode ser instanciada.', $concrete));
             }
 
-            return $reflection->newInstance();
+            $constructor = $reflection->getConstructor();
+            $arguments = $constructor === null || $constructor->getNumberOfParameters() === 0
+                ? []
+                : $this->resolveArguments($constructor);
+
+            return $this->instantiator->instantiate($reflection, $arguments);
         } catch (ContainerException $exception) {
             throw $exception;
         } catch (\Throwable $exception) {
@@ -84,5 +84,42 @@ final class Container implements ContainerInterface
                 previous: $exception
             );
         }
+    }
+
+    /**
+     * Resolve recursivamente os argumentos exigidos pelo construtor.
+     *
+     * @return array<int, object>
+     *
+     * @throws ContainerException Caso um parâmetro não possua um tipo de classe
+     *                            que o contêiner possa resolver.
+     */
+    private function resolveArguments(\ReflectionMethod $constructor): array
+    {
+        $arguments = [];
+
+        foreach ($constructor->getParameters() as $parameter) {
+            $type = $parameter->getType();
+
+            if (! $type instanceof \ReflectionNamedType) {
+                throw new ContainerException(
+                    sprintf('O parâmetro "$%s" não possui um tipo de classe que possa ser resolvido.', $parameter->getName())
+                );
+            }
+
+            if ($type->isBuiltin()) {
+                throw new ContainerException(
+                    sprintf(
+                        'O Container não pode resolver o tipo interno "%s" do parâmetro "$%s".',
+                        $type->getName(),
+                        $parameter->getName()
+                    )
+                );
+            }
+
+            $arguments[] = $this->make($type->getName());
+        }
+
+        return $arguments;
     }
 }
