@@ -1,0 +1,16 @@
+{
+    "name": "demezio/finbase",
+    "description": "Projeto base em PHP estruturado para aplicação de conceitos de arquitetura, design patterns e consolidação de conhecimentos.",
+    "autoload": {
+        "psr-4": {
+            "Demezio\\Finbase\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Henrique Demézio",
+            "email": "rickdemeziioofc@gmail.com"
+        }
+    ],
+    "require": {}
+}
