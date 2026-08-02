@@ -8,14 +8,17 @@ use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\InvalidRequestDataException;
 use Demezio\Finbase\Core\Http\Request;
 use Demezio\Finbase\Finance\Application\UseCase\CreateAccount\CreateAccount;
-use Demezio\Finbase\Finance\Domain\Entity\Account;
+use Demezio\Finbase\Finance\Presentation\Http\Presenter\AccountPresenter;
 
 /**
  * Traduz a criação de contas entre HTTP e o caso de uso da aplicação.
  */
 final class CreateAccountController
 {
-    public function __construct(private readonly CreateAccount $createAccount)
+    public function __construct(
+        private readonly CreateAccount $createAccount,
+        private readonly AccountPresenter $presenter,
+    )
     {
     }
 
@@ -32,21 +35,6 @@ final class CreateAccountController
 
         $account = $this->createAccount->execute($payload['name'], $payload['currency']);
 
-        return new JsonResponse($this->accountData($account), 201);
-    }
-
-    /**
-     * @return array{id: string, name: string, balance: array{amount: int, currency: string}}
-     */
-    private function accountData(Account $account): array
-    {
-        return [
-            'id' => $account->id()->value(),
-            'name' => $account->name(),
-            'balance' => [
-                'amount' => $account->balance()->amount(),
-                'currency' => $account->balance()->currency(),
-            ],
-        ];
+        return new JsonResponse($this->presenter->present($account), 201);
     }
 }

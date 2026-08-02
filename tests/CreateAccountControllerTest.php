@@ -9,6 +9,7 @@ use Demezio\Finbase\Core\Http\ExceptionHandler;
 use Demezio\Finbase\Finance\Application\UseCase\CreateAccount\CreateAccount;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\InMemory\InMemoryAccountRepository;
 use Demezio\Finbase\Finance\Presentation\Http\Controller\CreateAccountController;
+use Demezio\Finbase\Finance\Presentation\Http\Presenter\AccountPresenter;
 use PHPUnit\Framework\TestCase;
 
 final class CreateAccountControllerTest extends TestCase
@@ -52,7 +53,7 @@ final class CreateAccountControllerTest extends TestCase
 
     private function controller(): CreateAccountController
     {
-        return new CreateAccountController(new CreateAccount(new InMemoryAccountRepository()));
+        return new CreateAccountController(new CreateAccount(new InMemoryAccountRepository()), new AccountPresenter());
     }
 
     private function responseFor(Request $request): \Demezio\Finbase\Core\Http\Response

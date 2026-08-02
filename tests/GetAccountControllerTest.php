@@ -12,6 +12,7 @@ use Demezio\Finbase\Finance\Domain\Entity\Account;
 use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\InMemory\InMemoryAccountRepository;
 use Demezio\Finbase\Finance\Presentation\Http\Controller\GetAccountController;
+use Demezio\Finbase\Finance\Presentation\Http\Presenter\AccountPresenter;
 use PHPUnit\Framework\TestCase;
 
 final class GetAccountControllerTest extends TestCase
@@ -22,7 +23,7 @@ final class GetAccountControllerTest extends TestCase
         $id = AccountId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $repository->save(Account::restore($id, 'Conta Principal', new \Demezio\Finbase\Finance\Domain\ValueObject\Money(10000, 'BRL')));
 
-        $response = (new GetAccountController(new GetAccount($repository)))(
+        $response = (new GetAccountController(new GetAccount($repository), new AccountPresenter()))(
             (new Request('GET', '/accounts/'.$id->value()))->withRouteParameters(['id' => $id->value()]),
         );
 
@@ -39,7 +40,7 @@ final class GetAccountControllerTest extends TestCase
 
     public function testItMapsAnUnknownAccountToNotFound(): void
     {
-        $controller = new GetAccountController(new GetAccount(new InMemoryAccountRepository()));
+        $controller = new GetAccountController(new GetAccount(new InMemoryAccountRepository()), new AccountPresenter());
         $request = (new Request('GET', '/accounts/550e8400-e29b-41d4-a716-446655440000'))
             ->withRouteParameters(['id' => '550e8400-e29b-41d4-a716-446655440000']);
 

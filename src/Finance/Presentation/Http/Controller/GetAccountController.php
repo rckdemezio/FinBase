@@ -8,15 +8,18 @@ use Demezio\Finbase\Core\Http\InvalidRequestDataException;
 use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\Request;
 use Demezio\Finbase\Finance\Application\UseCase\GetAccount\GetAccount;
-use Demezio\Finbase\Finance\Domain\Entity\Account;
 use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
+use Demezio\Finbase\Finance\Presentation\Http\Presenter\AccountPresenter;
 
 /**
  * Traduz a consulta de uma conta entre HTTP e o caso de uso da aplicação.
  */
 final class GetAccountController
 {
-    public function __construct(private readonly GetAccount $getAccount)
+    public function __construct(
+        private readonly GetAccount $getAccount,
+        private readonly AccountPresenter $presenter,
+    )
     {
     }
 
@@ -28,21 +31,6 @@ final class GetAccountController
             throw new InvalidRequestDataException('O parâmetro "id" é obrigatório.');
         }
 
-        return new JsonResponse($this->accountData($this->getAccount->execute(AccountId::fromString($id))));
-    }
-
-    /**
-     * @return array{id: string, name: string, balance: array{amount: int, currency: string}}
-     */
-    private function accountData(Account $account): array
-    {
-        return [
-            'id' => $account->id()->value(),
-            'name' => $account->name(),
-            'balance' => [
-                'amount' => $account->balance()->amount(),
-                'currency' => $account->balance()->currency(),
-            ],
-        ];
+        return new JsonResponse($this->presenter->present($this->getAccount->execute(AccountId::fromString($id))));
     }
 }
