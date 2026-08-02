@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Demezio\Finbase\Core\Container;
 
 use Demezio\Finbase\Core\Contracts\ContainerInterface;
+use Demezio\Finbase\Core\Exceptions\CircularDependencyException;
 use Demezio\Finbase\Core\Exceptions\ContainerException;
+use Demezio\Finbase\Core\Exceptions\NotFoundBindingException;
 
 /**
  * Implementação em memória de um contêiner de dependências.
@@ -18,6 +20,12 @@ final class Container implements ContainerInterface
 {
     /** @var array<string, Binding> */
     private array $bindings = [];
+
+    /** @var array<string, object> */
+    private array $instances = [];
+
+    /** @var list<class-string> */
+    private array $resolving = [];
 
     private readonly Instantiator $instantiator;
 
@@ -35,6 +43,8 @@ final class Container implements ContainerInterface
             concrete: $concrete,
             shared: false
         );
+
+        unset($this->instances[$abstract]);
     }
 
     /**
@@ -46,21 +56,60 @@ final class Container implements ContainerInterface
             concrete: $concrete,
             shared: true
         );
+
+        unset($this->instances[$abstract]);
+    }
+
+    /**
+     * Registra uma instância pronta, criada fora do contêiner.
+     */
+    public function instance(string $abstract, object $instance): void
+    {
+        unset($this->bindings[$abstract]);
+        $this->instances[$abstract] = $instance;
     }
 
     /**
      * Verifica a existência de um registro para a abstração informada.
      */
-    public function has(string $abstract): bool
+    public function has(string $id): bool
     {
-        return isset($this->bindings[$abstract]);
+        if (isset($this->bindings[$id]) || isset($this->instances[$id])) {
+            return true;
+        }
+
+        if (! class_exists($id)) {
+            return false;
+        }
+
+        try {
+            return (new \ReflectionClass($id))->isInstantiable();
+        } catch (\ReflectionException) {
+            return false;
+        }
     }
 
     /** {@inheritDoc} */
     public function make(string $abstract): object
     {
-        $concrete = $this->has($abstract)
-            ? $this->bindings[$abstract]->concrete()
+        if (isset($this->instances[$abstract])) {
+            return $this->instances[$abstract];
+        }
+
+        $cycleStart = array_search($abstract, $this->resolving, true);
+
+        if ($cycleStart !== false) {
+            throw new CircularDependencyException([
+                ...array_slice($this->resolving, $cycleStart),
+                $abstract,
+            ]);
+        }
+
+        $this->resolving[] = $abstract;
+
+        $binding = $this->bindings[$abstract] ?? null;
+        $concrete = $binding !== null
+            ? $binding->concrete()
             : $abstract;
 
         try {
@@ -75,7 +124,13 @@ final class Container implements ContainerInterface
                 ? []
                 : $this->resolveArguments($constructor);
 
-            return $this->instantiator->instantiate($reflection, $arguments);
+            $instance = $this->instantiator->instantiate($reflection, $arguments);
+
+            if ($binding?->isShared()) {
+                $this->instances[$abstract] = $instance;
+            }
+
+            return $instance;
         } catch (ContainerException $exception) {
             throw $exception;
         } catch (\Throwable $exception) {
@@ -83,7 +138,19 @@ final class Container implements ContainerInterface
                 sprintf('Não foi possível resolver "%s".', $concrete),
                 previous: $exception
             );
+        } finally {
+            array_pop($this->resolving);
         }
+    }
+
+    /** {@inheritDoc} */
+    public function get(string $id): object
+    {
+        if (! $this->has($id)) {
+            throw new NotFoundBindingException($id);
+        }
+
+        return $this->make($id);
     }
 
     /**

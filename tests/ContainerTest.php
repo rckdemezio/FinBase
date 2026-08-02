@@ -49,6 +49,40 @@ final class ContainerTest extends TestCase
         self::assertInstanceOf(TestDependency::class, $resolved);
     }
 
+    public function testContainerReusesSingletonInstance(): void
+    {
+        $container = new Container();
+        $container->singleton(TestContract::class, TestDependency::class);
+
+        $first = $container->make(TestContract::class);
+        $second = $container->make(TestContract::class);
+
+        self::assertSame($first, $second);
+    }
+
+    public function testContainerReturnsTheReadyInstanceRegisteredByTheCompositionRoot(): void
+    {
+        $container = new Container();
+        $dependency = new TestDependency();
+
+        $container->instance(TestContract::class, $dependency);
+
+        self::assertTrue($container->has(TestContract::class));
+        self::assertSame($dependency, $container->make(TestContract::class));
+        self::assertSame($dependency, $container->make(TestContract::class));
+    }
+
+    public function testContainerCreatesNewInstanceForTransientBinding(): void
+    {
+        $container = new Container();
+        $container->bind(TestContract::class, TestDependency::class);
+
+        $first = $container->make(TestContract::class);
+        $second = $container->make(TestContract::class);
+
+        self::assertNotSame($first, $second);
+    }
+
     public function testContainerResolvesConcreteClassWithoutBinding(): void
     {
         $container = new Container();

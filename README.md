@@ -71,4 +71,4 @@ A organização planejada para os componentes técnicos está documentada em [Co
 
 ## Licença
 
-Projeto de estudo para uso pessoal. A licença será definida caso o repositório seja disponibilizado publicamente.
+Distribuído sob a [licença MIT](LICENSE).

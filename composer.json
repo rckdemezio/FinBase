@@ -1,6 +1,7 @@
 {
     "name": "demezio/finbase",
     "description": "Projeto base em PHP estruturado para aplicação de conceitos de arquitetura, design patterns e consolidação de conhecimentos.",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Demezio\\Finbase\\": "src/"
@@ -27,5 +28,8 @@
         "phpstan/phpstan": "^2.2",
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpunit/phpunit": "^13.2"
+    },
+    "require": {
+        "psr/container": "^2.0"
     }
 }
