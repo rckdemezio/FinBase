@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Demezio\Finbase\Core\Contracts;
 
+use Demezio\Finbase\Core\Exceptions\ContainerException;
+
 /**
  * Define o contrato de um contêiner de injeção de dependências.
  *
@@ -42,13 +44,15 @@ interface ContainerInterface
     public function singleton(string $abstract, string $concrete): void;
 
     /**
-     * Resolve uma abstração registrada e retorna sua instância.
+     * Resolve uma abstração registrada ou uma classe concreta.
      *
      * Para registros feitos com {@see singleton()}, as chamadas seguintes devem
      * retornar a mesma instância. Para registros feitos com {@see bind()}, a
      * implementação deve criar uma nova instância a cada resolução.
      *
      * @param class-string $abstract
+     *
+     * @throws ContainerException Caso a classe não possa ser resolvida.
      */
     public function make(string $abstract): object;
 
