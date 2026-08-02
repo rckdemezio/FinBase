@@ -6,6 +6,11 @@
             "Demezio\\Finbase\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Demezio\\Finbase\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Henrique Demézio",
