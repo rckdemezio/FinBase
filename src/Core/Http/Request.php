@@ -11,6 +11,7 @@ final class Request
 {
     /**
      * @param array<string, mixed> $query
+     * @param array<string, mixed> $form
      * @param array<string, string> $routeParameters
      */
     public function __construct(
@@ -19,6 +20,7 @@ final class Request
         private readonly array $query = [],
         private readonly string $body = '',
         private readonly array $routeParameters = [],
+        private readonly array $form = [],
     ) {
     }
 
@@ -34,6 +36,7 @@ final class Request
             $_SERVER['REQUEST_URI'] ?? '/',
             $_GET,
             $body === false ? '' : $body,
+            form: $_POST,
         );
     }
 
@@ -81,11 +84,19 @@ final class Request
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function form(): array
+    {
+        return $this->form;
+    }
+
+    /**
      * @param array<string, string> $routeParameters
      */
     public function withRouteParameters(array $routeParameters): self
     {
-        return new self($this->method, $this->uri, $this->query, $this->body, $routeParameters);
+        return new self($this->method, $this->uri, $this->query, $this->body, $routeParameters, $this->form);
     }
 
     /**

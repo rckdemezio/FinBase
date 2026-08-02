@@ -4,3 +4,4 @@
 /.vscode
 .php-cs-fixer.cache
 /storage/accounts.json
+/storage/transactions.json

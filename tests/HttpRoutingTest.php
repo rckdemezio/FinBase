@@ -7,6 +7,7 @@ namespace Demezio\Finbase\Tests;
 use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\InvalidJsonException;
 use Demezio\Finbase\Core\Http\Request;
+use Demezio\Finbase\Core\Http\RedirectResponse;
 use Demezio\Finbase\Core\Http\Response;
 use Demezio\Finbase\Core\Routing\Router;
 use PHPUnit\Framework\TestCase;
@@ -15,13 +16,14 @@ final class HttpRoutingTest extends TestCase
 {
     public function testRequestEncapsulatesHttpData(): void
     {
-        $request = new Request('post', '/accounts?currency=BRL', ['currency' => 'BRL'], '{"name":"Principal"}');
+        $request = new Request('post', '/accounts?currency=BRL', ['currency' => 'BRL'], '{"name":"Principal"}', form: ['name' => 'Principal']);
 
         self::assertSame('POST', $request->method());
         self::assertSame('/accounts?currency=BRL', $request->uri());
         self::assertSame('/accounts', $request->path());
         self::assertSame(['currency' => 'BRL'], $request->query());
         self::assertSame('{"name":"Principal"}', $request->body());
+        self::assertSame(['name' => 'Principal'], $request->form());
         self::assertSame(['name' => 'Principal'], $request->json());
     }
 
@@ -41,6 +43,15 @@ final class HttpRoutingTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertSame('application/json', $response->headers()['Content-Type']);
         self::assertSame(['status' => 'ok'], json_decode($response->content(), true, 512, JSON_THROW_ON_ERROR));
+    }
+
+    public function testRedirectResponseDefinesTheDestinationAndDefaultStatus(): void
+    {
+        $response = new RedirectResponse('/accounts');
+
+        self::assertSame(302, $response->status());
+        self::assertSame('', $response->content());
+        self::assertSame('/accounts', $response->headers()['Location']);
     }
 
     public function testRouterDispatchesTheMatchingRoute(): void

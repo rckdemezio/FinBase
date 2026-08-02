@@ -7,7 +7,9 @@ namespace Demezio\Finbase\Tests;
 use Demezio\Finbase\Core\Contracts\ContainerInterface;
 use Demezio\Finbase\Finance\Application\UseCase\CreateAccount\CreateAccount;
 use Demezio\Finbase\Finance\Domain\Repository\AccountRepository;
+use Demezio\Finbase\Finance\Domain\Repository\TransactionRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonAccountRepository;
+use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonTransactionRepository;
 use PHPUnit\Framework\TestCase;
 
 final class BootstrapTest extends TestCase
@@ -23,6 +25,7 @@ final class BootstrapTest extends TestCase
             $container->make(AccountRepository::class),
             $container->make(AccountRepository::class),
         );
+        self::assertInstanceOf(JsonTransactionRepository::class, $container->make(TransactionRepository::class));
     }
 
     public function testItResolvesUseCasesThroughTheirRepositoryAbstraction(): void
