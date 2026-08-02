@@ -6,6 +6,7 @@ namespace Demezio\Finbase\Finance\Infrastructure\Persistence\InMemory;
 
 use Demezio\Finbase\Finance\Domain\Entity\Transaction;
 use Demezio\Finbase\Finance\Domain\Repository\TransactionRepository;
+use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
 use Demezio\Finbase\Finance\Domain\ValueObject\TransactionId;
 
 /**
@@ -24,6 +25,17 @@ final class InMemoryTransactionRepository implements TransactionRepository
     public function findById(TransactionId $id): ?Transaction
     {
         return $this->transactions[$id->value()] ?? null;
+    }
+
+    /**
+     * @return list<Transaction>
+     */
+    public function findByAccountId(AccountId $accountId): array
+    {
+        return array_values(array_filter(
+            $this->transactions,
+            static fn (Transaction $transaction): bool => $transaction->accountId()->equals($accountId),
+        ));
     }
 
     /**

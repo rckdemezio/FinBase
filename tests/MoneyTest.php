@@ -57,6 +57,13 @@ final class MoneyTest extends TestCase
         self::assertSame('BRL', $money->currencyCode());
     }
 
+    public function testFormatsCentsForDisplay(): void
+    {
+        self::assertSame('1.500,00 BRL', (new Money(150000, 'BRL'))->format());
+        self::assertSame('0,05 BRL', (new Money(5, 'BRL'))->format());
+        self::assertSame('-1.500,00 BRL', (new Money(-150000, 'BRL'))->format());
+    }
+
     public function testAddsMoneyWithSameCurrency(): void
     {
         $result = (new Money(1000, 'BRL'))->add(new Money(500, 'BRL'));

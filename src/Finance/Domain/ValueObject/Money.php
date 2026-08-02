@@ -54,6 +54,22 @@ final class Money
     }
 
     /**
+     * Formata o valor para apresentação em português do Brasil, preservando a
+     * moeda associada ao montante.
+     */
+    public function format(): string
+    {
+        $amount = (string) $this->amount;
+        $negative = str_starts_with($amount, '-');
+        $digits = $negative ? substr($amount, 1) : $amount;
+        $integer = strlen($digits) > 2 ? substr($digits, 0, -2) : '0';
+        $decimal = str_pad(substr($digits, -2), 2, '0', STR_PAD_LEFT);
+        $integer = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $integer);
+
+        return sprintf('%s%s,%s %s', $negative ? '-' : '', $integer, $decimal, $this->currency);
+    }
+
+    /**
      * Soma dois valores da mesma moeda.
      *
      * @throws CurrencyMismatchException

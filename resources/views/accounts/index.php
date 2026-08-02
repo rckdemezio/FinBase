@@ -19,8 +19,7 @@ declare(strict_types=1);
                     </a>
                 </strong>
                 <span>
-                    <?= $account->balance()->amount() ?>
-                    <?= htmlspecialchars($account->balance()->currencyCode(), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($account->balance()->format(), ENT_QUOTES, 'UTF-8') ?>
                 </span>
             </article>
         <?php endforeach; ?>

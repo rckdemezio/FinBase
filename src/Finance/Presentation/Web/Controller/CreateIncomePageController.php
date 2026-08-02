@@ -11,10 +11,7 @@ use Demezio\Finbase\Core\View\View;
 use Demezio\Finbase\Finance\Application\UseCase\GetAccount\GetAccount;
 use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
 
-/**
- * Renderiza a página HTML de uma conta individual.
- */
-final class GetAccountPageController
+final class CreateIncomePageController
 {
     public function __construct(
         private readonly GetAccount $getAccount,
@@ -33,8 +30,12 @@ final class GetAccountPageController
         $account = $this->getAccount->execute(AccountId::fromString($id));
 
         return new HtmlResponse($this->view->render('layouts/app', [
-            'title' => $account->name(),
-            'content' => $this->view->render('accounts/show', ['account' => $account]),
+            'title' => 'Nova renda',
+            'content' => $this->view->render('transactions/income-create', [
+                'account' => $account,
+                'errors' => [],
+                'old' => ['amount' => '', 'description' => '', 'occurredAt' => ''],
+            ]),
         ]));
     }
 }

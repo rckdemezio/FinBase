@@ -57,6 +57,10 @@ composer fix
 
 A organização planejada para os componentes técnicos está documentada em [Core](src/Core/doc.md). O primeiro contrato definido é o [`ContainerInterface`](src/Core/Contracts/ContainerInterface.php), que estabelece o comportamento esperado do contêiner de injeção de dependências.
 
+## Limitações atuais
+
+As alterações de saldo e o histórico de transações são gravados em arquivos JSON distintos. Assim, se a gravação da transação falhar após a conta ser salva, o saldo poderá ficar sem o respectivo registro histórico. A consistência atômica será tratada quando a infraestrutura transacional for introduzida.
+
 ## Roadmap
 
 - [x] Inicializar o projeto com Composer e autoload PSR-4

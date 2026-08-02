@@ -48,6 +48,17 @@ final class JsonTransactionRepository implements TransactionRepository
     /**
      * @return list<Transaction>
      */
+    public function findByAccountId(AccountId $accountId): array
+    {
+        return array_values(array_filter(
+            $this->read(),
+            static fn (Transaction $transaction): bool => $transaction->accountId()->equals($accountId),
+        ));
+    }
+
+    /**
+     * @return list<Transaction>
+     */
     public function all(): array
     {
         return array_values($this->read());

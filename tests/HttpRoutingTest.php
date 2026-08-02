@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Demezio\Finbase\Tests;
 
-use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\InvalidJsonException;
-use Demezio\Finbase\Core\Http\Request;
+use Demezio\Finbase\Core\Http\JsonResponse;
 use Demezio\Finbase\Core\Http\RedirectResponse;
+use Demezio\Finbase\Core\Http\Request;
 use Demezio\Finbase\Core\Http\Response;
 use Demezio\Finbase\Core\Routing\Router;
 use PHPUnit\Framework\TestCase;
@@ -86,5 +86,39 @@ final class HttpRoutingTest extends TestCase
 
         self::assertSame(404, $response->status());
         self::assertSame(['message' => 'Not Found'], json_decode($response->content(), true, 512, JSON_THROW_ON_ERROR));
+    }
+
+    public function testApiRoutesRegisterTheAccountsListing(): void
+    {
+        $response = $this->routerWithRegisteredRoutes()->dispatch(new Request('GET', '/api/accounts'));
+
+        self::assertSame(200, $response->status());
+        self::assertSame('application/json', $response->headers()['Content-Type']);
+    }
+
+    public function testWebRoutesRegisterTheAccountsListing(): void
+    {
+        $response = $this->routerWithRegisteredRoutes()->dispatch(new Request('GET', '/accounts'));
+
+        self::assertSame(200, $response->status());
+        self::assertSame('text/html; charset=UTF-8', $response->headers()['Content-Type']);
+        self::assertStringContainsString('<title>Contas · FinBase</title>', $response->content());
+    }
+
+    private function routerWithRegisteredRoutes(): Router
+    {
+        /** @var Demezio\Finbase\Core\Contracts\ContainerInterface $container */
+        $container = require dirname(__DIR__).'/bootstrap/app.php';
+        $router = new Router();
+
+        /** @var callable(Router, Demezio\Finbase\Core\Contracts\ContainerInterface): void $registerApiRoutes */
+        $registerApiRoutes = require dirname(__DIR__).'/routes/api.php';
+        $registerApiRoutes($router, $container);
+
+        /** @var callable(Router, Demezio\Finbase\Core\Contracts\ContainerInterface): void $registerWebRoutes */
+        $registerWebRoutes = require dirname(__DIR__).'/routes/web.php';
+        $registerWebRoutes($router, $container);
+
+        return $router;
     }
 }

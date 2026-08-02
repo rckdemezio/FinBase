@@ -32,6 +32,7 @@ final class ListAccountsPageControllerTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertSame('text/html; charset=UTF-8', $response->headers()['Content-Type']);
         self::assertStringContainsString('Conta &lt;Principal&gt;', $response->content());
+        self::assertStringContainsString('0,00 BRL', $response->content());
         self::assertStringContainsString('/assets/css/app.css', $response->content());
     }
 }

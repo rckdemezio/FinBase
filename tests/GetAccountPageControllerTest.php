@@ -11,7 +11,6 @@ use Demezio\Finbase\Finance\Domain\Entity\Account;
 use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
 use Demezio\Finbase\Finance\Domain\ValueObject\Money;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\InMemory\InMemoryAccountRepository;
-use Demezio\Finbase\Finance\Presentation\Http\Presenter\AccountPresenter;
 use Demezio\Finbase\Finance\Presentation\Web\Controller\GetAccountPageController;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +23,6 @@ final class GetAccountPageControllerTest extends TestCase
         $repository->save(Account::restore($id, 'Conta <Principal>', new Money(10000, 'BRL')));
         $controller = new GetAccountPageController(
             new GetAccount($repository),
-            new AccountPresenter(),
             new View(dirname(__DIR__).'/resources/views'),
         );
 
@@ -35,7 +33,9 @@ final class GetAccountPageControllerTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertStringContainsString('Conta &lt;Principal&gt;', $response->content());
         self::assertStringContainsString($id->value(), $response->content());
-        self::assertStringContainsString('10000', $response->content());
+        self::assertStringContainsString('100,00 BRL', $response->content());
         self::assertStringContainsString('← Voltar para contas', $response->content());
+        self::assertStringContainsString('/accounts/'.$id->value().'/income/create', $response->content());
+        self::assertStringContainsString('/accounts/'.$id->value().'/expenses/create', $response->content());
     }
 }

@@ -69,6 +69,27 @@ abstract class TransactionRepositoryContractTestCase extends TestCase
         self::assertContains($second->id()->value(), $identifiers);
     }
 
+    public function testReturnsOnlyTransactionsForTheRequestedAccount(): void
+    {
+        $repository = $this->createRepository();
+        $first = $this->transaction('550e8400-e29b-41d4-a716-446655440000', TransactionType::CREDIT, 500000);
+        $second = Transaction::record(
+            $this->transactionId('9a5f8d6b-5c49-4c55-8d45-4e12ae41118d'),
+            AccountId::fromString('6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+            TransactionType::DEBIT,
+            new Money(150000, 'BRL'),
+            'Aluguel',
+            new \DateTimeImmutable('2026-08-02 14:30:00-03:00'),
+        );
+        $repository->save($first);
+        $repository->save($second);
+
+        $found = $repository->findByAccountId($first->accountId());
+
+        self::assertCount(1, $found);
+        self::assertTrue($first->id()->equals($found[0]->id()));
+    }
+
     private function transaction(string $id, TransactionType $type, int $amount): Transaction
     {
         return Transaction::record(

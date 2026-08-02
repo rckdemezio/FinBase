@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Demezio\Finbase\Finance\Domain\Repository;
 
 use Demezio\Finbase\Finance\Domain\Entity\Transaction;
+use Demezio\Finbase\Finance\Domain\ValueObject\AccountId;
 use Demezio\Finbase\Finance\Domain\ValueObject\TransactionId;
 
 /**
@@ -15,6 +16,11 @@ interface TransactionRepository
     public function save(Transaction $transaction): void;
 
     public function findById(TransactionId $id): ?Transaction;
+
+    /**
+     * @return list<Transaction>
+     */
+    public function findByAccountId(AccountId $accountId): array;
 
     /**
      * @return list<Transaction>
