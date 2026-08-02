@@ -5,8 +5,10 @@ declare(strict_types=1);
 use Demezio\Finbase\Core\Container\Container;
 use Demezio\Finbase\Core\View\View;
 use Demezio\Finbase\Finance\Domain\Repository\AccountRepository;
+use Demezio\Finbase\Finance\Domain\Repository\CategoryRepository;
 use Demezio\Finbase\Finance\Domain\Repository\TransactionRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonAccountRepository;
+use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonCategoryRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonTransactionRepository;
 
 $config = require __DIR__.'/../config/app.php';
@@ -29,6 +31,13 @@ $container->instance(
     AccountRepository::class,
     new JsonAccountRepository(
         $config['storage']['accounts'],
+    ),
+);
+
+$container->instance(
+    CategoryRepository::class,
+    new JsonCategoryRepository(
+        $config['storage']['categories'],
     ),
 );
 
