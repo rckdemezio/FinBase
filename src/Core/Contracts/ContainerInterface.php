@@ -23,8 +23,8 @@ interface ContainerInterface
      * Exemplo: associar `TransactionRepositoryInterface` a
      * `JsonTransactionRepository`.
      *
-     * @param class-string $abstract Classe ou interface solicitada pelos consumidores.
-     * @param class-string $concrete Classe concreta que implementa ou estende a abstração.
+     * @param class-string $abstract
+     * @param class-string $concrete
      */
     public function bind(string $abstract, string $concrete): void;
 
@@ -36,8 +36,8 @@ interface ContainerInterface
      * estado deve ser compartilhado durante o ciclo de vida da aplicação, como
      * um logger ou uma configuração.
      *
-     * @param class-string $abstract Classe ou interface solicitada pelos consumidores.
-     * @param class-string $concrete Classe concreta que implementa ou estende a abstração.
+     * @param class-string $abstract
+     * @param class-string $concrete
      */
     public function singleton(string $abstract, string $concrete): void;
 
@@ -48,21 +48,14 @@ interface ContainerInterface
      * retornar a mesma instância. Para registros feitos com {@see bind()}, a
      * implementação deve criar uma nova instância a cada resolução.
      *
-     * @param class-string $abstract Classe ou interface que será resolvida.
-     *
-     * @return object Instância correspondente à abstração solicitada.
-     *
-     * @throws \Throwable Caso a abstração não possa ser resolvida ou suas dependências não possam ser criadas.
+     * @param class-string $abstract
      */
     public function make(string $abstract): object;
 
     /**
      * Verifica se uma abstração possui um registro explícito no contêiner.
      *
-     * @param class-string $abstract Classe ou interface consultada.
-     *
-     * @return bool `true` quando houver um registro criado por {@see bind()} ou
-     *              {@see singleton()}; caso contrário, `false`.
+     * @param class-string $abstract
      */
     public function has(string $abstract): bool;
 }
