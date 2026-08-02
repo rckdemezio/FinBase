@@ -12,5 +12,14 @@
             "email": "rickdemeziioofc@gmail.com"
         }
     ],
-    "require": {}
+
+    "require": {},
+
+    "scripts": {
+        "analyse": "phpstan analyse"
+    },
+
+    "require-dev": {
+        "phpstan/phpstan": "^2.2"
+    }
 }
