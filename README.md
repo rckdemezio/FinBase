@@ -39,6 +39,18 @@ Projeto pessoal para estudar desenvolvimento de uma aplicação de controle fina
 
 3. À medida que a aplicação for implementada, mantenha o código em `src/` e os testes em `tests/`. Essas são as pastas já consideradas pelas ferramentas de qualidade.
 
+## Banco de dados local
+
+O MySQL de desenvolvimento é executado por Docker. Copie o exemplo de ambiente e inicie o contêiner:
+
+```bash
+cp .env.example .env
+docker compose up -d
+php database/migrate.php
+```
+
+O compose publica o MySQL em `127.0.0.1:3307`, pois a porta `3306` costuma estar ocupada por instalações locais. As credenciais reais ficam somente em `.env`, que não é versionado.
+
 ## Qualidade de código
 
 Depois de adicionar arquivos PHP em `src/`, execute a análise estática:

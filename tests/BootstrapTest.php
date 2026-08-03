@@ -10,6 +10,7 @@ use Demezio\Finbase\Finance\Domain\Repository\AccountRepository;
 use Demezio\Finbase\Finance\Domain\Repository\TransactionRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonAccountRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonTransactionRepository;
+use Demezio\Finbase\Finance\Infrastructure\Persistence\Pdo\PdoAccountRepository;
 use PHPUnit\Framework\TestCase;
 
 final class BootstrapTest extends TestCase
@@ -20,7 +21,13 @@ final class BootstrapTest extends TestCase
         $container = require __DIR__.'/../bootstrap/app.php';
 
         self::assertInstanceOf(ContainerInterface::class, $container);
-        self::assertInstanceOf(JsonAccountRepository::class, $container->make(AccountRepository::class));
+        /** @var array{persistence_driver: string} $database */
+        $database = require __DIR__.'/../config/database.php';
+        $expectedRepository = $database['persistence_driver'] === 'mysql'
+            ? PdoAccountRepository::class
+            : JsonAccountRepository::class;
+
+        self::assertInstanceOf($expectedRepository, $container->make(AccountRepository::class));
         self::assertSame(
             $container->make(AccountRepository::class),
             $container->make(AccountRepository::class),

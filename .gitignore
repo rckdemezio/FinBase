@@ -2,6 +2,7 @@
 /var/cache
 /.idea
 /.vscode
+.env
 .php-cs-fixer.cache
 /storage/accounts.json
 /storage/transactions.json
