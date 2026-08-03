@@ -12,6 +12,7 @@ use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonAccountRepositor
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonCategoryRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonTransactionRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Pdo\PdoAccountRepository;
+use Demezio\Finbase\Finance\Infrastructure\Persistence\Pdo\PdoTransactionRepository;
 
 $config = require __DIR__.'/../config/app.php';
 /** @var array{persistence_driver: string, driver: string, host: string, port: int, database: string, username: string, password: string} $database */
@@ -24,16 +25,19 @@ $container->instance(
     new View($config['views']),
 );
 
-$container->instance(
-    TransactionRepository::class,
-    new JsonTransactionRepository(
-        $config['storage']['transactions'],
-    ),
-);
+$connection = $database['persistence_driver'] === 'mysql'
+    ? PdoConnectionFactory::create($database)
+    : null;
 
-$accounts = $database['persistence_driver'] === 'mysql'
-    ? new PdoAccountRepository(PdoConnectionFactory::create($database))
-    : new JsonAccountRepository($config['storage']['accounts']);
+$transactions = $connection === null
+    ? new JsonTransactionRepository($config['storage']['transactions'])
+    : new PdoTransactionRepository($connection);
+
+$container->instance(TransactionRepository::class, $transactions);
+
+$accounts = $connection === null
+    ? new JsonAccountRepository($config['storage']['accounts'])
+    : new PdoAccountRepository($connection);
 
 $container->instance(AccountRepository::class, $accounts);
 

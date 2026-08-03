@@ -18,6 +18,7 @@ final class PdoAccountRepositoryTest extends AccountRepositoryContractTestCase
         /** @var array{driver: string, host: string, port: int, database: string, username: string, password: string} $config */
         $config = require dirname(__DIR__).'/config/database.php';
         $this->connection = PdoConnectionFactory::create($config);
+        $this->connection->exec('DELETE FROM transactions');
         $this->connection->exec('DELETE FROM accounts');
     }
 

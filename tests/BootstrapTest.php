@@ -11,6 +11,7 @@ use Demezio\Finbase\Finance\Domain\Repository\TransactionRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonAccountRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Json\JsonTransactionRepository;
 use Demezio\Finbase\Finance\Infrastructure\Persistence\Pdo\PdoAccountRepository;
+use Demezio\Finbase\Finance\Infrastructure\Persistence\Pdo\PdoTransactionRepository;
 use PHPUnit\Framework\TestCase;
 
 final class BootstrapTest extends TestCase
@@ -32,7 +33,11 @@ final class BootstrapTest extends TestCase
             $container->make(AccountRepository::class),
             $container->make(AccountRepository::class),
         );
-        self::assertInstanceOf(JsonTransactionRepository::class, $container->make(TransactionRepository::class));
+        $expectedTransactionsRepository = $database['persistence_driver'] === 'mysql'
+            ? PdoTransactionRepository::class
+            : JsonTransactionRepository::class;
+
+        self::assertInstanceOf($expectedTransactionsRepository, $container->make(TransactionRepository::class));
     }
 
     public function testItResolvesUseCasesThroughTheirRepositoryAbstraction(): void
